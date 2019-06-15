@@ -8,7 +8,11 @@ def get_all_contacts():
 
 @app.route('/api', methods=['POST'])
 def post_contact():
-    return "My flask app"
+    user_name = request.json['user_name']
+    first_name = request.json['first_name']
+    surname_name = request.json['surname_name']
+    emails = request.json['emails']
+    return post_contact_db(user_name, first_name, surname_name, emails)
 
 @app.route('/api/<user_name>', methods=['GET'])
 def get_contact(user_name):
@@ -16,8 +20,13 @@ def get_contact(user_name):
 
 @app.route('/api/<user_name>', methods=['PUT'])
 def put_contact(user_name):
-    return "My flask app"
+    user_name_updated = request.json['user_name']
+    first_name = request.json['first_name']
+    surname_name = request.json['surname_name']
+    emails = request.json['emails']
 
-@app.route('/api/<user_name>', methods=['DEL'])
+    return put_contact_db(user_name, user_name_updated,  first_name, surname_name, emails)
+
+@app.route('/api/<user_name>', methods=['DELETE'])
 def del_contact(user_name):
-    return "My flask app"
+    return delete_contact_db(user_name)

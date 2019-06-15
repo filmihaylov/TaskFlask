@@ -2,19 +2,22 @@ from app import db
 import datetime
 import json
 
+
 class Contract(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_name = db.Column(db.String(50),unique=True, nullable=False)
     first_name = db.Column(db.String(50), nullable=False)
     surname_name = db.Column(db.String(50), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
-    email = db.relationship('Email', backref='contract', lazy=False)
+    email = db.relationship('Email', backref='contract', lazy=False, cascade="all, delete, delete-orphan")
+
 
 class Email(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), nullable=False ,unique=True)
     contract_id = db.Column(db.Integer, db.ForeignKey('contract.id'),
         nullable=False)
+
 
 def get_all_contacts_db():
     contacts_list=[]
@@ -45,13 +48,40 @@ def get_contact_db(user_name):
             email_list.append(tem_email_dict)
         tem_dict['email']= email_list
         contacts_list.append(tem_dict)
-    return json.dumps(contacts_list[0])
+    return json.dumps(contacts_list)
 
 
+def delete_contact_db(user_name):
+    try:
+        user=Contract.query.filter_by(user_name=user_name).one()
+        db.session.delete(user)
+        db.session.commit()
+    except Exception as e:
+        pass
+    return "ok"
 
+def post_contact_db(user_name, first_name, surname_name, emails):
+    contact = Contract( user_name=user_name ,first_name=first_name, surname_name=surname_name, timestamp=datetime.datetime.now())
+    for email in emails:
+        e = Email(email=email)
+        contact.email.append(e)
+    db.session.add(contact)
+    db.session.commit()
+    db.session.close()
+    return "ok"
 
-
-
+def put_contact_db(username_init, user_name, first_name, surname_name, emails):
+    init_contact = Contract.query.filter_by(user_name=username_init).first()
+    init_contact.user_name= user_name
+    init_contact.first_name= first_name
+    init_contact.surname_name= surname_name
+    init_contact.email = []
+    for email in emails:
+        e = Email(email=email)
+        init_contact.email.append(e)
+    db.session.commit()
+    db.session.close()
+    return "ok"
 
 
 
